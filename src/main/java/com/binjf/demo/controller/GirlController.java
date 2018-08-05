@@ -1,11 +1,17 @@
 package com.binjf.demo.controller;
 
 import com.binjf.demo.entity.Girl;
+import com.binjf.demo.entity.Result;
 import com.binjf.demo.repository.GirlRepository;
 import com.binjf.demo.service.GirlService;
+import com.binjf.demo.utils.ResultUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -16,6 +22,8 @@ import java.util.List;
  **/
 @RestController
 public class GirlController {
+
+    private final static Logger logger = LoggerFactory.getLogger(GirlController.class);
 
     @Autowired
     private GirlRepository girlRepository;
@@ -33,17 +41,22 @@ public class GirlController {
     }
 
     /**
-     * 添加girl
-     * @param cupSize
-     * @param age
+     * 添加girl--新增校验年龄大于18
+     * @param girl
+     * @param bindingResult 校验结果
      * @return
      */
-    @PostMapping("/addGirl")
-    public Girl girlAdd(@RequestParam("cupSize") String cupSize, @RequestParam("age") Integer age){
-        Girl girl = new Girl();
-        girl.setAge(age);
-        girl.setCupSize(cupSize);
-        return girlRepository.save(girl);
+    @PostMapping("/girls")
+    public Result<Girl> girlAdd(@Valid Girl girl, BindingResult bindingResult){
+        //1 对年龄进行校验-不通过校验
+        if(bindingResult.hasErrors()){
+            return ResultUtil.error(1, bindingResult.getFieldError().getDefaultMessage());
+        }
+        //2 校验通过处理
+        girl.setAge(girl.getAge());
+        girl.setCupSize(girl.getCupSize());
+
+        return ResultUtil.success(girlRepository.save(girl));
     }
 
     /**
@@ -51,7 +64,7 @@ public class GirlController {
      * @param id
      * @return
      */
-    @GetMapping("/girl/{id}")
+    @GetMapping("/girls/{id}")
     public Girl getGirlById(@PathVariable("id") Integer id){
         return girlRepository.findById(id).orElse(null);
     }
@@ -63,7 +76,7 @@ public class GirlController {
      * @param age
      * @return
      */
-    @PutMapping("/updateGirl/{id}")
+    @PutMapping("/girls/{id}")
     public Girl updateGirl(@PathVariable("id") Integer id,
                                @RequestParam("cupSize") String cupSize,
                                @RequestParam("age") Integer age){
@@ -79,7 +92,7 @@ public class GirlController {
      * 根据id删除girl
      * @param id
      */
-    @DeleteMapping("/deleteGirl/{id}")
+    @DeleteMapping("/girls/{id}")
     public void deleteGirlById(@PathVariable("id") Integer id){
         girlRepository.deleteById(id);
     }
@@ -89,7 +102,7 @@ public class GirlController {
      * @param age
      * @return
      */
-    @GetMapping("/findGirlsByAge/age/{age}")
+    @GetMapping("/girls/age/{age}")
     public List<Girl> findGirlByAge(@PathVariable("age") Integer age){
         return girlRepository.findByAge(age);
     }
@@ -97,9 +110,19 @@ public class GirlController {
     /**
      * 插入2个Girl-事务
      */
-    @PostMapping("/insertTwo")
+    @PostMapping("/girls/two")
     public void insertTwo(){
         girlService.insertTwo();
+    }
+
+    /**
+     * 当抛出异常时，返回的数据结构不是Result类型，因此使用ExceptionHandle处理
+     * @param id
+     * @throws Exception
+     */
+    @GetMapping("/girls/getAge/{id}")
+    public void getAge(@PathVariable("id") Integer id) throws Exception{
+        girlService.getAge(id);
     }
 
 }

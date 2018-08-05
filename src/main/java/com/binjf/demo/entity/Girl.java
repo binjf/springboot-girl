@@ -4,6 +4,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.validation.constraints.Min;
 import java.io.Serializable;
 
 @Entity
@@ -14,6 +15,8 @@ public class Girl implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
+    /** 添加校验 */
+    @Min(value = 18, message = "未成年少女禁止入内")
     private Integer age;
     private String cupSize;
 
@@ -42,5 +45,14 @@ public class Girl implements Serializable {
 
     public void setCupSize(String cupSize) {
         this.cupSize = cupSize;
+    }
+
+    @Override
+    public String toString() {
+        return "Girl{" +
+                "id=" + id +
+                ", age=" + age +
+                ", cupSize='" + cupSize + '\'' +
+                '}';
     }
 }
