@@ -58,4 +58,13 @@ public class GirlService {
 
     }
 
+    /**
+     * 通过id查询Girl的信息
+     * @param id
+     * @return
+     */
+    public Girl findGirlById(Integer id){
+        return girlRepository.findById(id).orElse(null);
+    }
+
 }
